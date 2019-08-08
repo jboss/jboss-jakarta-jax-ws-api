@@ -19,9 +19,10 @@
       <artifactId>jboss-parent</artifactId>
       <version>35</version>
     </parent>
-    <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
-    <artifactId>jboss-jakarta-xml-ws-api_2.3.2_spec</artifactId>
-    <version>1.0.0.CR1-SNAPSHOT</version>
+    <groupId>org.jboss.spec.javax.xml.ws</groupId>
+    <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
+    <version>2.0.0.CR1-SNAPSHOT</version>
+
     <packaging>jar</packaging>
     <name>Jakarta XML Web Services API</name>
     <description>Jakarta XML Web Services API</description>
