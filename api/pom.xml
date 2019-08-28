@@ -29,8 +29,8 @@
     <url>https://github.com/eclipse-ee4j/jax-ws-api</url>
 
     <scm>
-        <connection>scm:git:git@github.com:jboss/jboss-jakarta-jax-ws-api_spec.git</connection>
-        <developerConnection>scm:git:git@github.com:jboss/jboss-jakarta-jax-ws-api_spec.git</developerConnection>
+        <connection>scm:git:https://github.com/jboss/jboss-jakarta-jax-ws-api_spec.git</connection>
+        <developerConnection>scm:git:https://github.com/jboss/jboss-jakarta-jax-ws-api_spec.git</developerConnection>
         <url>https://github.com/jboss/jboss-jakarta-jax-ws-api_spec</url>
         <tag>HEAD</tag>
     </scm>
