@@ -10,6 +10,9 @@
 
 package javax.xml.ws.spi;
 
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,10 +97,28 @@ class ServiceLoaderUtil {
     }
 
     static <T extends Exception> ClassLoader contextClassLoader(ExceptionHandler<T> exceptionHandler) throws T {
+        final SecurityManager sm = System.getSecurityManager();
+        if (sm == null) {
+            try {
+                return Thread.currentThread().getContextClassLoader();
+            } catch (Exception x) {
+                throw exceptionHandler.createException(x, x.toString());
+            }
+        }
+
         try {
-            return Thread.currentThread().getContextClassLoader();
-        } catch (Exception x) {
-            throw exceptionHandler.createException(x, x.toString());
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<ClassLoader>() {
+                @Override
+                public ClassLoader run() throws T {
+                    try {
+                        return Thread.currentThread().getContextClassLoader();
+                    } catch (Exception x) {
+                        throw exceptionHandler.createException(x, x.toString());
+                    }
+                }
+            });
+        } catch (PrivilegedActionException e) {
+            throw (T)e.getException();
         }
     }
 
