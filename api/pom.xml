@@ -267,13 +267,14 @@
                         <!--Bundle-SymbolicName>${spec.bundle.symbolic-name}</Bundle-SymbolicName-->
                         <Bundle-SymbolicName>org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec</Bundle-SymbolicName>
                         <!--Extension-Name>${spec.extension.name}</Extension-Name-->
-                        <Implementation-Version>${spec.implementation.version}</Implementation-Version>
-                        <Specification-Version>${spec.specification.version}</Specification-Version>
+                        <Implementation-Version>${spec.version}</Implementation-Version>
+                        <Specification-Version>${spec.version}</Specification-Version>
                         <DynamicImport-Package>org.glassfish.hk2.osgiresourcelocator</DynamicImport-Package>
                         <Specification-Vendor>Eclipse Foundation</Specification-Vendor>
                         <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
                         <Implementation-Vendor-Id>org.glassfish</Implementation-Vendor-Id>
                         <Implementation-Build-Id>${scmBranch}-${buildNumber}, ${timestamp}</Implementation-Build-Id>
+                        <Automatic-Module-Name>beta.jboss.jaxws.api_2_3</Automatic-Module-Name>
                         <_noee>true</_noee>
                     </instructions>
                 </configuration>
