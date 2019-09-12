@@ -106,9 +106,9 @@
         <maven.build.timestamp.format>yyMMdd.HHmm</maven.build.timestamp.format>
         <legal.doc.source>${project.basedir}/..</legal.doc.source>
 
-        <annotation-api.version>1.3.4</annotation-api.version>
-        <jaxb-api.version>2.3.2</jaxb-api.version>
-        <soap-api.version>1.4.1</soap-api.version>
+        <annotation-api.version>2.0.0.Final</annotation-api.version>
+        <jaxb-api.version>2.0.0.Final</jaxb-api.version>
+        <soap-api.version>1.0.0.Final</soap-api.version>
         <jws-api.version>2.1.0</jws-api.version>
     </properties>
 
@@ -331,18 +331,18 @@ Use is subject to <a href="{@docRoot}/doc-files/speclicense.html" target="_top">
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>jakarta.xml.bind</groupId>
-                    <artifactId>jakarta.xml.bind-api</artifactId>
+                    <groupId>org.jboss.spec.javax.xml.bind</groupId>
+                    <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
                     <version>${jaxb-api.version}</version>
                 </dependency>
                 <dependency>
-                    <groupId>jakarta.xml.soap</groupId>
-                    <artifactId>jakarta.xml.soap-api</artifactId>
+                    <groupId>org.jboss.spec.javax.xml.soap</groupId>
+                    <artifactId>jboss-saaj-api_1.4_spec</artifactId>
                     <version>${soap-api.version}</version>
                 </dependency>
                 <dependency>
-                    <groupId>jakarta.annotation</groupId>
-                    <artifactId>jakarta.annotation-api</artifactId>
+                    <groupId>org.jboss.spec.javax.annotation</groupId>
+                    <artifactId>jboss-annotations-api_1.3_spec</artifactId>
                     <version>${annotation-api.version}</version>
                 </dependency>
                 <dependency>
