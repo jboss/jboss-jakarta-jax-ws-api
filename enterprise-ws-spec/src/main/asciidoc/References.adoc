@@ -1,0 +1,49 @@
+[appendix]
+== References
+
+. Jakarta XML Web Services 3.0
+https://jakarta.ee/specifications/xml-web-services/3.0/
+
+. Jakarta XML Binding 3.0
+https://jakarta.ee/specifications/xml-binding/3.0/
+
+. Jakarta Web Services Metadata
+https://jakarta.ee/specifications/web-services-metadata/3.0/
+
+. Jakarta Annotations 2.0
+https://jakarta.ee/specifications/annotations/2.0/
+
+. Jakarta XML-RPC 1.1
+https://jakarta.ee/specifications/xml-rpc/1.1/
+
+. Jakarta XML Registries 1.0
+https://jakarta.ee/specifications/xml-registries/1.0/
+
+. SOAP 1.1 W3C Note, 2000
+http://www.w3.org/TR/2000/NOTE-SOAP-20000508
+
+. SOAP 1.2 W3C specification, 2003 http://www.w3.org/TR/soap12/
+
+. WSDL 1.1 W3C Note, 2001 http://www.w3.org/TR/2001/NOTE-wsdl-20010315
+
+. MTOM/XOP W3C Recommendation, 2005 http://www.w3.org/TR/soap12-mtom/
+
+. Jakarta Servlet 5.0
+https://jakarta.ee/specifications/servlet/5.0/
+
+. Jakarta EE 9
+https://jakarta.ee/specifications/platform/9/
+
+. Jakarta Enterprise Beans 4.0
+https://jakarta.ee/specifications/enterprise-beans/4.0/
+
+. Jakarta Context Dependency Injection 3.0 https://jakarta.ee/specifications/cdi/3.0/
+
+. Web Services Addressing 1.0 - Core. W3C Recommendation. 2006.
+http://www.w3.org/TR/2006/REC-ws-addr-core-20060509/
+
+. Web Services Addressing 1.0 – Soap Binding. W3C Recommendation. 2006.
+http://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/
+
+. Web Services Addressing 1.0 - Metadata. W3C Recommendation. 2007.
+http://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904

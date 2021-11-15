@@ -1,0 +1,461 @@
+//
+// Copyright (c) 2020 Contributors to the Eclipse Foundation
+//
+
+[[soapbindchap]]
+== SOAP Binding
+
+This chapter describes the Jakarta XML Web Services SOAP binding and its extensions to the
+handler framework (described in <<handfmwk>>) for SOAP message
+processing.
+
+[[configuration-1]]
+=== Configuration
+
+A SOAP binding instance requires SOAP specific configuration in addition
+to that described in <<handlerconfig>>. The additional information
+can be configured either programmatically or using deployment metadata.
+The following subsections describe each form of configuration.
+
+[[programmatic-configuration]]
+==== Programmatic Configuration
+
+Jakarta XML Web Services defines APIs for programmatic configuration of client-side SOAP
+bindings. Server side bindings can be configured programmatically when
+using the `Endpoint` API (see <<endpointif>>), but are otherwise expected
+to be configured using annotations or deployment metadata.
+
+[[soap-roles]]
+===== SOAP Roles
+
+SOAP 1.1<<bib2>> and SOAP 1.2<<bib3>><<bib4>> use different terminology
+for the same concept: a SOAP 1.1 _actor_ is equivalent to a SOAP 1.2
+_role_. This specification uses the SOAP 1.2 terminology.
+
+An ultimate SOAP receiver always plays the following roles:
+
+Next::
+In SOAP 1.1, the next role is identified by the URI
+http://schemas.xmlsoap.org/soap/actor/next. In SOAP 1.2, the next role
+is identified by the URI
+http://www.w3.org/2003/05/soap-envelope/role/next.
+Ultimate receiver::
+In SOAP 1.1 the ultimate receiver role is identified by omission of
+the `actor` attribute from a SOAP header. In SOAP 1.2 the ultimate
+receiver role is identified by the URI
+http://www.w3.org/2003/05/soap-envelope/role/ultimateReceiver or by
+omission of the `role` attribute from a SOAP header.
+
+&#9674; _Conformance (SOAP required roles):_ An implementation of the SOAP binding MUST act in
+the following roles: next and ultimate receiver.
+
+A SOAP 1.2 endpoint never plays the following role:
+
+None::
+In SOAP 1.2, the none role is identified by the URI
+http://www.w3.org/2003/05/soap-envelope/role/none.
+
+&#9674; _Conformance (SOAP required roles):_ An implementation of the SOAP binding MUST NOT act
+in the none role.
+
+The `jakarta.xml.ws.SOAPBinding` interface is an abstraction of the Jakarta XML Web Services
+SOAP binding. It extends `jakarta.xml.ws.Binding` with methods to
+configure additional SOAP roles played by the endpoint.
+
+&#9674; _Conformance (Default role visibility):_ An implementation MUST include the required
+next and ultimate receiver roles in the `Set` returned from
+`SOAPBinding.getRoles`.
+
+&#9674; _Conformance (Default role persistence):_ An implementation MUST add the required next
+and ultimate receiver roles to the roles configured with
+`SOAPBinding.setRoles`.
+
+&#9674; _Conformance (None role error):_ An implementation MUST throw `WebServiceException` if
+a client attempts to configure the binding to play the none role via
+`SOAPBinding.setRoles`.
+
+[[soapbindchaphand]]
+===== SOAP Handlers
+
+The handler chain for a SOAP binding is configured as described in
+<<handfmwrkprogconf>>. The handler chain may contain handlers of
+the following types:
+
+Logical::
+Logical handlers are handlers that implement
+`jakarta.xml.ws.handler.LogicalHandler` either directly or indirectly.
+Logical handlers have access to the content of the SOAP body via the
+logical message context.
+SOAP::
+SOAP handlers are handlers that implement
+`jakarta.xml.ws.handler.soap.SOAPHandler`.
+
+Mime attachments specified by the
+`jakarta.xml.ws.binding.attachments.inbound` and
+`jakarta.xml.ws.binding.attachments.outbound` properties defined in the
+<<Table 9.2>> can be modified in logical
+handlers. A SOAP message with the attachments specified using the
+properties is generated before invoking the first `SOAPHandler`. Any
+changes to the two properites in consideration above in the
+`MessageContext` after invoking the first `SOAPHandler` are ignored. The
+`SOAPHandler` however may change the properties in the `MessageContext`
+
+Use of `jakarta.xml.ws.binding.attachments.outbound` property in Dispatch
+
+* When using `Dispatch` in SOAP / HTTP binding in payload mode,
+attachments specified using the
+`jakarta.xml.ws.binding.attachments.outbound` property will be included as
+mime attachments in the message.
+* When using `Dispatch` in SOAP / HTTP binding in message mode, the
+`jakarta.xml.ws.binding.attachments.outbound` property will be ignored as
+the message type already provides a way to specify attachments.
+
+&#9674; _Conformance (Incompatible handlers):_ An implementation MUST throw
+`WebServiceException` when, at the time a binding provider is created,
+the handler chain returned by the configured `HandlerResolver` contains
+an incompatible handler.
+
+&#9674; _Conformance (Incompatible handlers):_ Implementations MUST throw a
+`WebServiceException` when attempting to configure an incompatible
+handler using `Binding.setHandlerChain`.
+
+&#9674; _Conformance (Logical handler access):_ An implementation MUST allow access to the
+contents of the SOAP body via a logical message context.
+
+[[soap-headers]]
+===== SOAP Headers
+
+The SOAP headers understood by a handler are obtained using the
+`getHeaders` method of `SOAPHandler`.
+
+[[deployment-model-1]]
+==== Deployment Model
+
+Jakarta XML Web Services defines no standard deployment model for handlers. Such a model
+is provided by Jakarta Enterprise Web Services<<bib17>>.
+
+[[processing-model]]
+=== Processing Model
+
+The SOAP binding implements the general handler framework processing
+model described in <<handprocmodel>> but extends it to include
+SOAP specific processing as described in the following subsections.
+
+[[soapmuprocrules]]
+==== SOAP `mustUnderstand` Processing
+
+The SOAP protocol binding performs the following additional processing
+on inbound SOAP messages prior to the start of normal handler invocation
+processing (see <<handlerexecution>>). Refer to the SOAP
+specification<<bib2>><<bib3>><<bib4>> for a normative description of the
+SOAP processing model. This section is not intended to supercede any
+requirement stated within the SOAP specification, but rather to outline
+how the configuration information described above is combined to satisfy
+the SOAP requirements:
+
+. [[muhandroleset,Step 1]]Obtain the set of SOAP roles for the current binding
+instance. This is returned by `SOAPBinding.getRoles`.
+. [[muhandinfoset,Step 2]]Obtain the set of ``Handler``s deployed on the current
+binding instance. This is obtained via `Binding.getHandlerChain`.
+. [[muunderstoodheaders,Step 3]]Identify the set of header qualified names
+(QNames) that the binding instance understands. This is the set of all
+header ``QName``s that satisfy at least one of the following conditions:
+.. that are mapped to method parameters in the service endpoint
+interface;
+.. are members of `SOAPHandler.getHeaders()` for each `SOAPHandler` in
+the set obtained in <<muhandinfoset>>;
+.. are directly supported by the binding instance.
+. [[mutargettedheaders,Step 4]] Identify the set of must understand headers in
+the inbound message that are targeted at this node. This is the set of
+all headers with a `mustUnderstand` attribute whose value is `1` or
+`true` and an `actor` or `role` attribute whose value is in the set
+obtained in <<muhandroleset>>.
+. For each header in the set obtained in <<mutargettedheaders>>,
+the header is understood if its QName is in the set identified in
+<<muunderstoodheaders>>.
+. If every header in the set obtained in <<mutargettedheaders>> is
+understood, then the node understands how to process the message.
+Otherwise the node does not understand how to process the message.
+. If the node does not understand how to process the message, then
+neither handlers nor the endpoint are invoked and instead the binding
+generates a SOAP must understand exception. Subsequent actions depend on
+whether the message exchange pattern (MEP) in use requires a response to
+the message currently being processed or not:
++
+Response::
+The message direction is reversed and the binding dispatches the SOAP
+must understand exception (see <<soap11excepthandling>>).
+No response::
+The binding dispatches the SOAP must understand exception (see
+<<soap11excepthandling>>).
+
+[[soap11excepthandling]]
+==== Exception Handling
+
+The following subsections describe SOAP specific requirements for
+handling exceptions thrown by handlers and service endpoint
+implementations.
+
+[[handler-exceptions]]
+===== Handler Exceptions
+
+A binding is responsible for catching runtime exceptions thrown by
+handlers and following the processing model described in
+<<handlerexecution>>. A binding is responsible for converting the
+exception to a fault message subject to further handler processing if
+the following criteria are met:
+
+. A handler throws a `ProtocolException` from `handleMessage`
+. The MEP in use includes a response to the message being processed
+. The current message is not already a fault message (the handler
+might have undertaken the work prior to throwing the exception).
+
+If the above criteria are met then the exception is converted to a SOAP
+fault message as follows:
+
+* If the exception is an instance of `SOAPFaultException` then the
+fields of the contained Jakarta SOAP with Attachments' `SOAPFault` are serialized to a new SOAP
+fault message, see <<mapextosoapfault>>. The current message is
+replaced by the new SOAP fault message.
+* If the exception is of any other type then a new SOAP fault message is
+created to reflect a server class of error for SOAP 1.1<<bib2>>
+or a receiver class of error for SOAP 1.2<<bib3>>.
+* Handler processing is resumed as described in <<handlerexecution>>.
+
+If the criteria for converting the exception to a fault message subject
+to further handler processing are not met then the exception is handled
+as follows depending on the current message direction:
+
+Outbound::
+A new SOAP fault message is created to reflect a server class of error
+for SOAP 1.1<<bib2>> or a receiver class of error for SOAP
+1.2<<bib3>> and the message is
+dispatched.
+Inbound::
+The exception is passed to the binding provider.
+
+[[service-endpoint-exceptions]]
+===== Service Endpoint Exceptions
+
+Service endpoints can throw service specific exceptions or runtime
+exceptions. In both cases they can provide protocol specific information
+using the cause mechanism, see <<protocolspecificfaults>>.
+
+A server side implementation of the SOAP binding is responsible for
+catching exceptions thrown by a service endpoint implementation and, if
+the message exchange pattern in use includes a response to the message
+that caused the exception, converting such exceptions to SOAP fault
+messages and invoking the `handleFault` method on handlers for the fault
+message as described in <<handlerexecution>>.
+
+<<mapextosoapfault>> describes the rules for mapping an exception
+to a SOAP fault.
+
+[[mapextosoapfault]]
+===== Mapping Exceptions to SOAP Faults
+
+When mapping an exception to a SOAP fault, the fields of the fault
+message are populated according to the following rules of precedence:
+
+* `faultcode` (`Subcode` in SOAP 1.2, `Code` set to `env:Receiver`)
+. ``SOAPFaultException.getFault().getFaultCodeAsQName()``footnote:cause[If the exception is a `SOAPFaultException` or has a cause that is a `SOAPFaultException`.]
+. `env:Server` (`Subcode` omitted for SOAP 1.2).
+* `faultstring` (`Reason/Text`)
+. ``SOAPFaultException.getFault().getFaultString()``footnote:cause[]
+. `Exception.getMessage()`
+. `Exception.toString()`
+* `faultactor` (`Role` in SOAP 1.2)
+. ``SOAPFaultException.getFault().getFaultActor()``footnote:cause[]
+. Empty
+* `detail` (`Detail` in SOAP 1.2)
+. Serialized service specific exception (see
+_WrapperException_.`getFaultInfo()` in <<faulttoexceptmap>>)
+. ``SOAPFaultException.getFault().getDetail()``footnote:cause[]
+
+[[soapbindmsgcontext]]
+=== SOAP Message Context
+
+SOAP handlers are passed a `SOAPMessageContext` when invoked.
+`SOAPMessageContext` extends `MessageContext` with methods to obtain and
+modify the SOAP message payload.
+
+[[soapbindprotocols]]
+=== SOAP Transport and Transfer Bindings
+
+SOAP<<bib2>><<bib4>> can be bound
+to multiple transport or transfer protocols. This section describes
+requirements pertaining to the supported protocols for use with SOAP.
+
+[[soapbindhttp]]
+==== HTTP
+
+The SOAP 1.1 HTTP binding is identified by the URL
+`http://schemas.xmlsoap.org/wsdl/soap/http`, which is also the value of
+the constant `jakarta.xml.ws.soap.SOAPBinding.SOAP11HTTP_BINDING`.
+
+&#9674; _Conformance (SOAP 1.1 HTTP Binding Support):_ An implementation MUST support the HTTP
+binding of SOAP 1.1<<bib2>> and SOAP With Attachments<<bib38>> as clarified by the WS-I Basic
+Profile<<bib20>>, WS-I Simple SOAP
+Binding Profile<<bib32>> and WS-I Attachment Profile<<bib33>>.
+
+The SOAP 1.2 HTTP binding is identified by the URL
+`http://www.w3.org/2003/05/soap/bindings/HTTP/`, which is also the value
+of the constant `jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING`.
+
+&#9674; _Conformance (SOAP 1.2 HTTP Binding Support):_ An implementation MUST support the HTTP
+binding of SOAP 1.2<<bib4>>.
+
+[[mtom]]
+===== MTOM
+
+&#9674; _Conformance (SOAP MTOM Support):_ An implementation MUST support MTOM<<bib30>>
+footnote:[Jakarta XML Web Services inherits the Jakarta XML Binding support for
+the SOAP MTOM/XOP mechanism for optimizing transmission
+of binary data types, see <<wsdl11typemapping>>.].
+
+`SOAPBinding` defines a property (in the JavaBeans sense) called
+`MTOMEnabled` that can be used to control the use of MTOM. The
+`getMTOMEnabled` method is used to query the current value of the
+property. The `setMTOMEnabled` method is used to change the value of the
+property so as to enable or disable the use of MTOM.
+
+&#9674; _Conformance (Semantics of MTOM enabled):_ When MTOM is enabled, a receiver MUST accept
+both non-optimized and optimized messages, and a sender MAY send an
+optimized message, non-optimized messages being also acceptable.
+
+The heuristics used by a sender to determine whether to use optimization
+or not are implementation-specific.
+
+&#9674; _Conformance (MTOM support):_ Predefined `SOAPBinding` instances MUST support
+enabling/disabling MTOM support using the `setMTOMenabled` method.
+
+&#9674; _Conformance (SOAP bindings with MTOM disabled):_ The bindings corresponding to the
+following IDs:
+
+* `jakarta.xml.ws.soap.SOAPBinding.SOAP11HTTP_BINDING`
+* `jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING`
+
+MUST have MTOM disabled by default.
+
+For convenience, this specification defines two additional binding
+identifiers for SOAP 1.1 and SOAP 1.2 over HTTP with MTOM enabled.
+
+The URL of the former is
+`http://schemas.xmlsoap.org/wsdl/soap/http?mtom=true` and its predefined
+constant `jakarta.xml.ws.soap.SOAPBinding.SOAP11HTTP_MTOM_BINDING`.
+
+The URL of the latter is
+`http://www.w3.org/2003/05/soap/bindings/HTTP/?mtom=true` and its
+predefined constant
+`jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_MTOM_BINDING`.
+
+&#9674; _Conformance (SOAP bindings with MTOM enabled):_ The bindings corresponding to the
+following IDs:
+
+* `jakarta.xml.ws.soap.SOAPBinding.SOAP11HTTP_MTOM_BINDING`
+* `jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_MTOM_BINDING`
+
+MUST have MTOM enabled by default.
+
+&#9674; _Conformance (MTOM on Other SOAP Bindings):_ Other bindings that extend `SOAPBinding`
+MAY NOT support changing the value of the `MTOMEnabled` property. In
+this case, if an application attempts to change its value, an
+implementation MUST throw a `WebServiceException`.
+
+[[one-way-operations]]
+===== One-way Operations
+
+HTTP interactions are request-response in nature. When using HTTP as the
+transfer protocol for a one-way SOAP message, implementations wait for
+the HTTP response even though there is no SOAP message in the HTTP
+response entity body.
+
+&#9674; _Conformance (One-way operations):_ When invoking one-way operations, an implementation
+of the SOAP/HTTP binding MUST block until the HTTP response is received
+or an error occurs.
+
+Note that completion of the HTTP request simply means that the
+transmission of the request is complete, not that the request was
+accepted or processed.
+
+[[security]]
+===== Security
+
+<<stdbpprops>> defines two standard context properties
+(`jakarta.xml.ws.security.auth.username` and
+`jakarta.xml.ws.security.auth.password`) that may be used to configure
+authentication information.
+
+&#9674; _Conformance (HTTP basic authentication support):_ An implementation of the SOAP/HTTP
+binding MUST support HTTP basic authentication.
+
+&#9674; _Conformance (Authentication properties):_ A client side implementation MUST support
+use of the the standard properties `jakarta.xml.ws.security.auth.username`
+and `jakarta.xml.ws.security.auth.password` to configure HTTP basic
+authentication.
+
+[[session-management-1]]
+===== Session Management
+
+<<stdbpprops>> defines a standard context property
+(`jakarta.xml.ws.session.maintain`) that may be used to control whether a
+client side runtime will join a session initiated by a service.
+
+A SOAP/HTTP binding implementation can use three HTTP mechanisms for
+session management:
+
+Cookies::
+To initiate a session a service includes a cookie in a message sent to
+a client. The client stores the cookie and returns it in subsequest
+messages to the service.
+URL rewriting::
+To initiate a session a service directs a client to a new URL for
+subsequent interactions. The new URL contains an encoded session
+identifier.
+SSL::
+The SSL session ID is used to track a session.
+
+R1120 in WS-I Basic Profile 1.1<<bib20>>
+allows a service to use HTTP cookies. However, R1121 recommends
+that a service should not rely on use of cookies for state management.
+
+&#9674; _Conformance (URL rewriting support):_
+An implementation MUST support use of HTTP URL
+rewriting for state management.
+
+&#9674; _Conformance (Cookie support):_
+An implementation SHOULD support use of HTTP cookies
+for state management.
+
+&#9674; _Conformance (SSL session support):_
+An implementation MAY support use of SSL session based state management.
+
+[[addressing]]
+===== Addressing
+
+If addressing is enabled, implementations are required to follow
+WS-Addressing<<bib26>><<bib37>><<bib27>> protocols.
+
+&#9674; _Conformance (SOAP Addressing Support):_ An implementation MUST support WS-Addressing
+1.0 - SOAP Binding<<bib37>>.
+
+&#9674; __Conformance (__``__wsa:Action__``__ value):__
+`wsa:Action` value MUST be got from `@Action`
+annotation elements in SEI, if present. But if a client sets a
+`BindingProvider.SOAPACTION_URI_PROPERTY` property then that MUST be
+used for `wsa:Action` header.
+
+If a receiver receives messages with the WS-Addressing headers that are
+non-conformant as per WS-Addressing 1.0- SOAP Binding<<bib37>>,
+then appropriate addressing pre-defined faults must be
+generated.
+
+A Jakarta XML Web Services application may send `wsa:replyTo` or `wsa:FaultTo` addressing
+header to receive non-anonymous responses at a different address other
+than the transport back channel. When the application receives a
+response at a different address, there is no standard way to communicate
+the response with the Jakarta XML Web Services client runtime. Hence, there are no
+requirements on a Jakarta XML Web Services client runtime to bind non-anonymous responses.
+A Jakarta XML Web Services client runtime may start an endpoint to receive a non-anonymous
+response and may use the response to bind to the java parameters and
+return type. However, it is not required to do so.

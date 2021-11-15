@@ -1,0 +1,318 @@
+[#anchor-65]
+== Deployment Descriptors
+
+This chapter describes the various deployment descriptors used for Web
+Services for Jakarta EE and the roles responsible for defining the
+information within the deployment descriptors.
+
+[#anchor-66]
+=== Web Services Deployment Descriptor
+
+This section defines the content of the webservices.xml file, location
+within modules, roles and responsibilities, and the format.
+
+==== Overview
+
+The webservices.xml deployment descriptor file defines the set of Web
+services that are to be deployed in a Web Services for Jakarta EE enabled
+container. With Jakarta XML Web Services the use of webservices.xml is 
+optional since the annotations can be used to specify most of the information 
+specified in this deployment descriptor file. The deployment descriptors 
+are only used to override or augment the annotation member attributes. 
+The packaging of the webservices.xml deployment descriptor file is defined
+in sections link:#anchor-55[5.4.2] and link:#anchor-56[5.4.3]. Web
+services are defined by WSDL documents as described by section
+link:#anchor-4[3.2]. The deployment descriptor defines the WSDL port to
+Port component relationship. Port components are defined in Chapter
+link:#anchor-35[5].
+
+[#anchor-68]
+==== Developer responsibilities
+
+The developer is responsible not only for the implementation of a Web
+service, but also for declaring its deployment characteristics. The
+deployment characteristics are defined in both the EJB annotations or
+module specific deployment descriptor and Web Services annotations or
+the webservices.xml deployment descriptor. Service Implementations using
+a stateless or singleton session bean may use EJB annotations with no
+deployment descriptor file. If the EJB annotations are not specified
+then the stateless or singleton session bean must be defined in the
+ejb-jar.xml deployment descriptor file using the session element.
+Servlet based web service endpoints using Jakarta XML Web Services
+are not required to provide the web.xml deployment descriptor file 
+(see section link:#anchor-45[5.3.2.1]). See the Jakarta Enterprise Beans and Servlet 
+specifications for additional details on developer requirements for 
+defining deployment descriptors. The developer is also required to 
+provide structural information that defines the Port components within 
+the webservices.xml deployment descriptor file. The developer is 
+responsible for providing the set of WSDL documents that describe the 
+Web services to be deployed, the Java classes that represent the 
+Web services, and the mapping that correlates the two.
+
+The developer is responsible for providing the following information in
+the webservices.xml deployment descriptor:
+
+* **Port's name. **A logical name for the port must be specified by the
+developer using the port-component-name element. This name bears no
+relationship to the WSDL port name. This name must be unique amongst all
+port component names in a module.
+* **Port's bean class. **The developer declares the implementation of
+the Web service using the service-impl-bean element of the deployment
+descriptor. The bean declared in this element must refer to a class that
+implements the methods of the Port's Service Endpoint Interface. This
+element allows a choice of implementations. For a Jakarta XML Web Services 
+Service Endpoint, the servlet-link element associates the port-component 
+with Jakarta XML Web Services Service Endpoint class defined 
+in the web.xml by the servlet-class element. For a stateless or singleton 
+session bean implementation, the ejb-link element associates the port-component 
+with a session element in the ejb-jar.xml. The ejb-link element may not refer 
+to a session element defined in another module. A servlet must only be linked 
+to by a single port-component. A session EJB must only be linked to by a 
+single port-component.
+* **Port's Service Endpoint Interface. **The developer must specify the
+fully qualified class name of the Service Endpoint Interface in the
+service-endpoint-interface element. The Service Endpoint Interface
+requirements may be found in section link:#anchor-41[5.3.1]. If the
+Service Implementation is a stateless session EJB, the developer must
+also specify the Service Endpoint Interface in the EJB deployment
+descriptor using the service-endpoint element. See the Jakarta Enterprise
+Beans specification for more details.
+* *Port's WSDL definition.* The wsdl-file element specifies a location
+of the WSDL description of a set of Web services. The location is
+relative to the root of the module and must be specified by the
+developer. The WSDL file may reference (e.g. import) other files
+contained within the module using relative references. It may also
+reference other files external to the module using an explicit URL.
+Relative imports are declared relative to the file defining the import.
+Imported files may import other files as well using relative locations
+or explicit URLs. It is recommended that the WSDL file and relative
+referenced files be packaged in the wsdl directory as described in
+section link:#anchor-52[5.4.1]. Relative references must not start with
+a "/".
+* **Service QName. **In addition to specifying the WSDL document, the
+developer may also specify the WSDL Service QName in the wsdl-service
+element for each Port defined in the deployment descriptor when Jakarta 
+XML Web Services based runtime is used. This element is required if the 
+port-component being defined is a Provider Interface defined by Jakarta 
+XML Web Services.
+* *Port's QName.* In addition to specifying the WSDL document, the
+developer must also specify the WSDL port QName in the wsdl-port element
+for each Port defined in the deployment descriptor.
+* **MTOM/XOP support. **The developer may specify if MTOM/XOP support
+for the port-component is enabled or disabled by using enable-mtom
+element when Jakarta XML Web Services based runtime is used.
+* **Addressing support. **The developer may specify an addressing
+support for the port-component by using addressing element when 
+Jakarta XML Web Services based runtime is used.
+* **RespectBinding support. **The developer may specify a respect
+binding support for the port-component by using respect-binding element
+when Jakarta XML Web Services based runtime is used.
+* **Protocol Binding. **The developer may override the protocol binding
+specified by BindingType annotation by specifying the URI or a
+pre-defined token (like \##SOAP11_HTTP, ##SOAP12_HTTP, \##XML_HTTP etc.)
+in the protocol-binding element when Jakarta XML Web Services based 
+runtime is used. The default protocol binding is ##SOAP11_HTTP. If this 
+element is not specified then the default value is assumed. The pre-defined 
+tokens essentially act as alias for the actual URI for the protocol binding.
+The URIs for these pre-defined tokens are listed below:
+** ##SOAP11_HTTP - "http://schemas.xmlsoap.org/wsdl/soap/http"
+** ##SOAP12_HTTP - "http://www.w3.org/2003/05/soap/bindings/HTTP/"
+** ##SOAP11_HTTP_MTOM -
+"http://schemas.xmlsoap.org/wsdl/soap/http?mtom=true"
+** ##SOAP12_HTTP_MTOM -
+"http://www.w3.org/2003/05/soap/bindings/HTTP/?mtom=true"
+** ##XML_HTTP - "http://www.w3.org/2004/08/wsdl/http"
+* *Handlers.* A developer may optionally specify handlers associated
+with the port-component using handler-chains element when Jakarta XML 
+Web Services based runtime is used. With Jakarta XML Web Services, 
+the soap-header element declared in the deployment descriptor is not 
+required since that information is embedded in the implementation of 
+the Handler class. With Jakarta XML Web Services, init-params element 
+in the deployment descriptors is no longer used. If needed, the
+developer should use the environment entry elements (<env-entry>)
+declared in the application component's deployment descriptor for this
+purpose. These can be injected into the handler using the @Resource
+annotation or looked up using JNDI.
+* **Servlet Mapping. **A developer may optionally specify a servlet-mapping, 
+in the web.xml deployment descriptor.  No more than one servlet-mapping 
+may be specified for a servlet that is linked to by a port-component. 
+The url-pattern of the servlet-mapping must be an exact match pattern 
+(i.e.  it must not contain an asterisk ("*")).
+
+Note that if the WSDL specifies an address statement within the port,
+its URI address is ignored. This address is generated and replaced
+during the deployment process in the deployed WSDL.
+
+See also the developer requirements defined in section
+link:#anchor-71[7.2.2].
+
+==== Assembler responsibilities
+
+The assembler's responsibilities for Web Services for Jakarta EE are an
+extension of the assembler responsibilities as defined by the Jakarta 
+Enterprise Beans, Servlet, and Jakarta EE specifications. The assembler 
+creates a deployable artifact by composing multiple modules, resolving
+cross-module dependencies, providing annotation overrides and producing
+an EAR file.
+
+The assembler may modify any of the following information that has been
+specified by the developer in the webservices.xml deployment descriptor
+file:
+
+* *Description fields.* The assembler may change existing or create new
+description elements.
+* *Handlers.* The assembler may change values of existing param-value
+elements, may add new init-param elements, may change or add soap-role elements, 
+or may add new handler elements or new handler-chain elements. With Jakarta XML Web Services, 
+Handler implementation must contain all the soap-header information needed by it.
+
+See also the assembler responsibilities defined in
+section link:#anchor-72[7.2.3].
+
+==== Deployer responsibilities
+
+The deployer responsibilities are defined by the Jakarta EE, Jakarta Enterprise
+Beans, and Servlet specifications.
+
+In addition, the deployer must resolve the following information:
+
+* where published WSDL definitions are placed. The deployer must publish
+every webservice-description wsdl-file with the correct port address
+attribute value to access the service.
+* the value of the port address attribute for deployed services.
+
+==== Web Services Deployment Descriptor XML Schema
+
+The XML Schema for the Web service deployment descriptor is described at
+https://jakarta.ee/xml/ns/jakartaee/jakartaee_web_services_2_0.xsd
+
+[#anchor-67]
+=== Service Reference Deployment Descriptor Information
+
+This section defines the function of the Service Reference XML schema
+file, its use within modules, the platform roles and responsibilities
+for defining instance data, and the format.
+
+==== Overview
+
+The Service Reference XML schema defines the schema for service
+reference entries. These entries declare references to Web services used
+by a Jakarta EE component in the web, EJB, or application client container.
+With Jakarta XML Web Services, these entries are not required if
+jakarta.xml.ws.WebServiceRef annotation is used. If the Web services
+client is a Jakarta EE component, then it uses a logical name for the Web
+service called a service reference to look up the service. Any component
+that uses a Web service reference must declare a dependency on the Web
+service reference in a module's deployment descriptor file.
+
+[#anchor-71]
+==== Developer responsibilities
+
+The developer is responsible for defining a service-ref for each Web
+service a component within the module wants to reference. This includes
+the following information:
+
+* **Service Reference Name. **This defines a logical name for the
+reference that is used in the client source code. It is recommended, but
+not required that the name begin with service/.
+* *Service type:* The service-interface element defines the fully
+qualified name of the Jakarta XML Web Services Service Interface/Class 
+class returned by the JNDI lookup.
+* *Service Reference type:* The service-ref-type element declares the
+type of the service-ref element that is injected or returned when a JNDI
+lookup is done. This must be either a fully qualified name of Service
+class or the fully qualified name of Service endpoint interface class.
+This is an optional element.
+* *Ports.* The developer declares requirements for container managed
+port resolution using the port-component-ref element. The
+port-component-ref elements are resolved to a WSDL port by the
+container. See Chapter link:#anchor-13[4] for a discussion of container
+managed port access.
+* *MTOM/XOP support.* The developer may specify if MTOM/XOP support for
+the port-component-ref is enabled or disabled by using enable-mtom
+element when Jakarta XML Web Services based runtime is used.
+* *Addressing support.* The developer may specify an addressing support
+for the port-component-ref by using _addressing_ element when Jakarta 
+XML Web Services based runtime is used.
+* *RespectBinding support.* The developer may specify a respect binding
+support for the _port-component-ref_ by using _respect-binding_ element
+when Jakarta XML Web Services based runtime is used.
+
+The developer may specify the following information:
+
+[#anchor-73]
+* *WSDL definition.* The wsdl-file element specifies a
+location of the WSDL description of the service. The location is
+relative to the root of the module. The WSDL description may be a
+partial WSDL, but must at least include the portType and binding
+elements. The WSDL description provided by the developer is considered a
+template that must be preserved by the assembly/deployment process. In
+other words, the WSDL description contains a declaration of the
+application's dependency on portTypes, bindings, and QNames. The WSDL
+document must be fully specified, including the service and port
+elements, if the application is dependent on port QNames (e.g. uses the
+Service.getPort(QName,Class) method). The developer must specify the
+wsdl-file if any of the Service methods declared in section
+link:#anchor-31[4.2.4.4] or link:#anchor-32[4.2.4.5] are used. The WSDL
+file may reference (e.g. import) other files contained within the module
+using relative references. It may also reference other files external to
+the module using an explicit URL. Relative imports are declared relative
+to the file defining the import. Imported files may import other files
+as well using relative locations or explicit URLs. Relative references
+must not start with a "/".
+* *Service Port.* If the specified wsdl-file has more than one service
+element, the developer must specify the service-qname.
+* *Handlers.* The developer may optionally use the handler-chains
+element when specifying handler chains associated with the service-ref
+under Jakarta XML Web Services based runtime.
+
+[#anchor-72]
+==== Assembler responsibilities
+
+In addition to the responsibilities defined within the Jakarta EE
+specification, the assembler may define the following information:
+
+* *Binding of service references*. The assembler may link a Web service
+reference to a component within the Jakarta EE application unit using the
+port-component-link element. It is the assembler's responsibility to
+ensure there are no detailed differences in the SEI and target bindings
+that would cause stub generation or runtime problems.
+
+The assembler may modify any of the following information that has been
+specified by the developer in the service-ref element of the module's
+deployment descriptor file:
+
+* *Description fields.* The assembler may change existing or create new
+description elements.
+* *Handlers.* The assembler may change values of existing param-value
+elements, may add new init-param elements, may change or add soap-role 
+elements, or may add new handler elements or new handler-chain elements. 
+With Jakarta XML Web Services, Handler implementation must contain all 
+the soap-header information needed by it.  
+* *WSDL definition.* The assembler may replace the WSDL definition with
+a new WSDL that resolves missing service and port elements or missing
+port address attributes. The assembler may update the port address
+attribute.
+
+==== Deployer responsibilities
+
+In addition to the normal duties a Jakarta EE deployer platform role has,
+the deployer must also provide deploy time binding information to
+resolve the WSDL document to be used for each service-ref. If a partial
+WSDL document was specified and service and port elements are needed by
+a vendor to resolve the binding, they may be generated. The deployer is
+also responsible for providing deploy time binding information to
+resolve port access declared by the port-component-ref element.
+
+[#section725]
+==== Web Services Client Service Reference XML Schema
+
+[#anchor-74]
+This section defines the XML Schema for the service-ref at
+https://jakarta.ee/xml/ns/jakartaee/jakartaee_web_services_client_2_0.xsd.
+This schema is imported into the common Jakarta EE schema and is used by
+the application client, web, and EJB module deployment descriptor
+schemas to declare service-refs. See the Jakarta EE 7 and corresponding
+versions of Servlet and EJB specifications for more details on
+specifying a service-ref in the deployment descriptors.
+

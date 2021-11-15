@@ -1,0 +1,482 @@
+//
+// Copyright (c) 2020 Contributors to the Eclipse Foundation
+//
+
+[[introduction]]
+== Introduction
+
+XML<<bib1>> is a platform-independent means of representing
+structured information. XML Web Services use XML as the basis for
+communication between Web-based services and clients of those services
+and inherit XML’s platform independence. SOAP<<bib2>><<bib3>><<bib4>>
+describes one such XML based message format and "defines, using XML
+technologies, an extensible messaging framework containing a message
+construct that can be exchanged over a variety of underlying
+protocols."
+
+WSDL<<bib5>> is "an XML format for describing network
+services as a set of endpoints operating on messages containing either
+document-oriented or procedure-oriented information." WSDL can be
+considered the de-facto service description language for XML Web
+Services.
+
+JAX-RPC 1.0<<bib6>> defined APIs and conventions for supporting RPC
+oriented XML Web Services in the Java platform. Jakarta XML RPC<<bib7>> added
+support for the WS-I Basic Profile 1.0<<bib8>> to improve interoperability between
+Jakarta XML RPC implementations and with services implemented using other technologies.
+
+Jakarta XML Web Services (this specification) is a follow-on to Jakarta XML RPC,
+extending it as described in the following sections.
+
+Throughout the document, references to JAXB refer to the Jakarta XML Binding
+unless otherwise noted and references to JAX-WS refer to the Jakarta XML Web
+Services unless otherwise noted.
+
+[[goals]]
+=== Goals
+
+Since the release of JAX-RPC 1.0<<bib6>>, new specifications and
+new versions of the standards it depends on have been released.
+Jakarta XML Web Services relates to these specifications
+and standards as follows:
+
+Jakarta XML Binding::
+Due primarily to scheduling concerns, JAX-RPC 1.0 defined its own data
+binding facilities. With the release of JAXB 1.0 <<bib9>>
+there is no reason to maintain two separate sets of XML mapping
+rules in the Java platform. Jakarta XML Web Services will delegate data
+binding-related tasks to the Jakarta XML Binding<<bib39>>
+specification that is being developed in parallel with Jakarta XML Web Services. +
+Jakarta XML Binding<<bib39>> will add support for Java to XML
+mapping, additional support for less used XML schema constructs, and
+provide bidirectional customization of Java
+&#x21d4; XML data binding. Jakarta XML Web Services will allow
+full use of JAXB provided facilities including binding customization
+and optional schema validation.
+* JAX-WS 2.1 requires JAXB 2.1<<bib11>>.
+* JAX-WS 2.2 requires JAXB 2.2<<bib12>>.
+* JAX-WS 2.3 requires JAXB 2.3<<bib13>>.
+* Jakarta XML Web Services 3.0 requires Jakarta XML Binding 3.0<<bib39>>.
+
+SOAP 1.2::
+Whilst SOAP 1.1 is still widely deployed, it’s expected that services
+will migrate to SOAP 1.2<<bib3>><<bib4>>
+now that it is a W3C Recommendation.
+Jakarta XML Web Services will add support for SOAP 1.2 whilst
+requiring continued support for SOAP 1.1.
+
+WSDL 2.0::
+The W3C is expected to progress WSDL 2.0<<bib14>> to
+Recommendation during the lifetime of this JSR. Jakarta XML Web Services
+will add support for WSDL 2.0 whilst requiring continued support for WSDL 1.1.
+[NOTE]
+.Note
+====
+_The expert group decided against this goal for this
+release. We will look at adding support in a future revision of the
+Jakarta XML Web Services specification._
+====
+
+WS-I Basic Profile 1.1::
+Jakarta XML RPC added support for WS-I Basic Profile 1.0. WS-I Basic
+Profile 1.1 is expected to supersede 1.0 during the lifetime of this
+specificatoin and Jakarta XML Web Services will add support
+for the additional clarifications it provides.
+
+A Metadata Facility for the Java Programming Language (JSR 175)::
+Jakarta XML Web Services will define the use of Java annotations<<bib15>> to
+simplify the most common development scenarios for both clients and
+servers.
+
+Jakarta XML Web Services Metadata::
+Jakarta XML Web Services will align with and complement the annotations defined by
+Jakarta XML Web Services Metadata<<bib16>>.
+
+Jakarta Enterprise Web Services::
+The Jakarta Enterprise Web Services specification<<bib17>>
+defined `jaxrpc-mapping-info`
+deployment descriptor provides deployment time Java
+&#x21d4; WSDL mapping functionality. In
+conjunction with Jakarta Enterprise Web Services Metadata<<bib16>>,
+Jakarta Enterprise Web Services will complement this
+mapping functionality with development time Java annotations that
+control Java &#x21d4; WSDL mapping.
+
+Web Services Security (JSR 183)::
+Jakarta XML Web Services will align with and complement the security APIs
+defined by JSR 183<<bib18>>.
+
+Jakarta XML Web Services will improve support for document/message centric usage:
+
+Asynchrony::
+Jakarta XML Web Services will add support for client side asynchronous operations.
+
+Non-HTTP Transports::
+Jakarta XML Web Services will improve the separation between the XML message
+format and the underlying transport mechanism to simplify use of Jakarta XML
+Web Services with non-HTTP transports.
+
+Message Access::
+Jakarta XML Web Services will simplify client and service access
+to the messages underlying an exchange.
+
+Session Management::
+Jakarta XML RPC session management capabilities are tied to HTTP. Jakarta
+XML Web Services will add support for message based session management.
+
+Jakarta XML Web Services will also address issues that have arisen
+with experience of implementing and using JAX-RPC 1.0:
+
+Handlers::
+Jakarta XML Web Services will simplify the development of handlers and
+will provide a mechanism to allow handlers to collaborate with service
+clients and service endpoint implementations.
+
+Versioning and Evolution of Web Services::
+Jakarta XML Web Services will describe techniques and mechanisms to ease
+the burden on developers when creating new versions of existing services.
+
+[[nongoals20]]
+=== Non-Goals
+
+The following are non-goals:
+
+Backwards Compatibility of Binary Artifacts::
+Binary compatibility between Jakarta XML RPC and Jakarta XML Web Services
+implementation runtimes.
+
+Pluggable data binding::
+Jakarta XML Web Services will defer data binding to Jakarta XML Binding<<bib39>>;
+it is not a goal to provide a plug-in API to allow other types of data
+binding technologies to be used in place of Jakarta XML Binding. However,
+Jakarta XML Web Services will maintain the capability to selectively disable
+data binding to provide an XML based fragment suitable for use as input to
+alternative data binding technologies.
+
+SOAP Encoding Support::
+Use of the SOAP encoding is essentially deprecated in the web services
+community, e.g., the WS-I Basic Profile<<bib8>> excludes SOAP encoding. Instead,
+literal usage is  preferred, either in the RPC or document style. +
+ +
+SOAP 1.1 encoding is supported in JAX-RPC 1.0 and Jakarta XML RPC but its support
+in Jakarta XML Web Services runs counter to the goal of delegation of
+data binding to Jakarta XML Binding. Therefore Jakarta XML Web Services
+will make support for SOAP 1.1 encoding optional and defer description of
+it to Jakarta XML RPC. +
+ +
+Support for the SOAP 1.2 Encoding<<bib4>>
+is optional in SOAP 1.2 and Jakarta XML Web Services will not add
+support for SOAP 1.2 encoding.
+
+Backwards Compatibility of Generated Artifacts::
+JAX-RPC 1.0 and JAXB 1.0 bind XML to Java in different ways.
+Generating source code that works with unmodified Jakarta XML RPC client
+source code is not a goal.
+
+Support for Java versions prior to Java SE 5.0::
+Jakarta XML Web Services relies on many of the Java language features
+added in Java SE 5.0. It is not a goal to support Jakarta XML Web
+Services on Java versions prior to Java SE 5.0.
+
+Service Registration and Discovery::
+It is not a goal of Jakarta XML Web Services to describe registration
+and discovery of services via UDDI or ebXML RR. This capability is
+provided independently by Jakarta XML Registries<<bib19>>.
+
+[[requirements]]
+=== Requirements
+
+[[relationship-to-jaxb]]
+==== Relationship To Jakarta XML Binding
+
+Jakarta XML Web Services specification describes the WSDL &#x21d4; Java mapping,
+but data binding is delegated to Jakarta XML Binding<<bib39>>. The
+specification must clearly designate where Jakarta XML Binding rules
+apply to the WSDL &#x21d4; Java mapping without reproducing those
+rules and must describe how Jakarta XML Binding capabilities (e.g.,
+the Jakarta XML Binding binding language) are incorporated into
+Jakarta XML Web Services. Jakarta XML Web Services is required to be able to
+influence the Jakarta XML Binding binding, e.g., to avoid name collisions and to be
+able to control schema validation on serialization and deserialization.
+
+[[standardized-wsdl-mapping]]
+==== Standardized WSDL Mapping
+
+WSDL is the de-facto service description language for XML Web Services.
+The specification must specify a standard WSDL
+&#x21d4; Java mapping. The following versions of
+WSDL must be supported:
+
+* WSDL 1.1<<bib5>> as clarified by the WS-I Basic
+Profile(Ballinger, Ehnebuske, Gudgin, et al. 2004; Ballinger, Ehnebuske,
+Ferris, et al. 2004)
+
+The standardized WSDL mapping will describe the default WSDL
+&#x21d4; Java mapping. The default mapping may be
+overridden using customizations as described below.
+
+[[customizable-wsdl-mapping]]
+==== Customizable WSDL Mapping
+
+The specification must provide a standard way to customize the WSDL
+&#x21d4; Java mapping. The following customization
+methods will be specified:
+
+Java Annotations::
+In conjunction with Jakarta XML Binding<<bib39>> and Jakarta XML
+Web Services Metadata<<bib16>> specifications,
+the specification will define a set of standard annotations
+that may be used in Java source files to specify the mapping from Java
+artifacts to their associated WSDL components. The annotations will
+support mapping to WSDL 1.1.
+
+WSDL Annotations::
+In conjunction with Jakarta XML Binding<<bib39>> and Jakarta XML
+Web Services Metadata<<bib16>> specifications,
+the specification will define a set of standard annotations
+that may be used either within WSDL documents or as in an external
+form to specify the mapping from WSDL components to their associated
+Java artifacts. The annotations will support mapping from WSDL 1.1.
+
+The specification must describe the precedence rules governing
+combinations of the customization methods.
+
+[[standardized-protocol-bindings]]
+==== Standardized Protocol Bindings
+
+The specification must describe standard bindings to the following
+protocols:
+
+* SOAP 1.1<<bib2>> as clarified by the WS-I Basic Profile<<bib8>><<bib20>>
+* SOAP 1.2<<bib3>><<bib4>>
+
+The specification must not prevent non-standard bindings to other
+protocols.
+
+[[standardized-transport-bindings]]
+==== Standardized Transport Bindings
+
+The specification must describe standard bindings to the following
+protocols:
+
+* HTTP/1.1<<bib21>>.
+
+The specification must not prevent non-standard bindings to other
+transports.
+
+[[standardized-handler-framework]]
+==== Standardized Handler Framework
+
+The specification must include a standardized handler framework that
+describes:
+
+Data binding for handlers::
+The framework will offer data binding facilities to handlers and will
+support handlers that are decoupled from the Jakarta SOAP with Attachments API.
+
+Handler Context::
+The framework will describe a mechanism for communicating properties
+between handlers and the associated service clients and service
+endpoint implementations.
+
+Unified Response and Fault Handling::
+The `handleResponse` and `handleFault` methods will be unified and the
+the declarative model for handlers will be improved.
+
+[[versioning-and-evolution]]
+==== Versioning and Evolution
+
+The specification must describe techniques and mechanisms to support
+versioning of service endpoint interfaces. The facilities must allow new
+versions of an interface to be deployed whilst maintaining compatibility
+for existing clients.
+
+[[standardized-synchronous-and-asynchronous-invocation]]
+==== Standardized Synchronous and Asynchronous Invocation
+
+There must be a detailed description of the generated method signatures
+to support both asynchronous and synchronous method invocation in stubs
+generated by Jakarta XML Web Services. Both forms of invocation will
+support a user configurable timeout period.
+
+[[session-management]]
+==== Session Management
+
+The specification must describe a standard session management mechanism
+including:
+
+Session APIs::
+Definition of a session interface and methods to obtain the session
+interface and initiate sessions for handlers and service endpoint
+implementations.
+
+HTTP based sessions::
+The session management mechanism must support HTTP cookies and URL
+rewriting.
+
+SOAP based sessions::
+The session management mechanism must support SOAP based session
+information.
+
+[[use-cases]]
+=== Use Cases
+
+[[handler-framework]]
+==== Handler Framework
+
+[[reliable-messaging-support]]
+===== Reliable Messaging Support
+
+A developer wishes to add support for a reliable messaging SOAP feature
+to an existing service endpoint. The support takes the form of a Jakarta
+XML Web Services handler.
+
+[[message-logging]]
+===== Message Logging
+
+A developer wishes to log incoming and outgoing messages for later
+analysis, e.g., checking messages using the WS-I testing tools.
+
+[[ws-i-conformance-checking]]
+===== WS-I Conformance Checking
+
+A developer wishes to check incoming and outgoing messages for
+conformance to one or more WS-I profiles at runtime.
+
+[[conventions]]
+=== Conventions
+
+The keywords 'MUST', 'MUST NOT', 'REQUIRED', 'SHALL', 'SHALL NOT',
+'SHOULD', 'SHOULD NOT', 'RECOMMENDED', 'MAY', and 'OPTIONAL' in this
+document are to be interpreted as described in RFC 2119<<bib22>>.
+
+For convenience, conformance requirements are called out from the main
+text as follows:
+
+&#9674; _Conformance (Example):_ Implementations MUST do something.
+
+A list of all such conformance requirements can be found in appendix
+<<confreqs>>.
+
+Java code and XML fragments are formatted as shown in figure <<fex>>:
+
+[id="fex"]
+.Example Java Code
+[source,java,numbered]
+-------------
+package com.example.hello;
+
+public class Hello {
+    public static void main(String args[]) {
+        System.out.println("Hello World");
+    }
+}
+-------------
+
+
+Non-normative notes are formatted as shown below.
+
+[NOTE]
+.Note
+====
+_This is a note._
+====
+
+This specification uses a number of namespace prefixes throughout; they
+are listed in <<TableNS>>. Note that the choice of any namespace
+prefix is arbitrary and not semantically significant (see XML
+Infoset<<bib23>>).
+
+[id="TableNS"]
+.Prefixes and Namespaces used in this specification.
+[cols=,,,options="header"]
+|===
+|Prefix |Namespace |Notes
+|env |http://www.w3.org/2003/05/soap-envelope |A normative XML
+Schema<<bib24>><<bib25>> document for the
+http://www.w3.org/2003/05/soap-envelope namespace can be found at
+http://www.w3.org/2003/05/soap-envelope.
+|xsd |http://www.w3.org/2001/XMLSchema |The namespace of the XML
+schema<<bib24>><<bib25>> specification
+|wsdl |http://schemas.xmlsoap.org/wsdl/ |The namespace of the WSDL
+schema<<bib5>>
+|soap |http://schemas.xmlsoap.org/wsdl/soap/ |The namespace of the WSDL
+SOAP binding schema<<bib24>><<bib25>>
+|jaxb |https://jakarta.ee/xml/ns/jaxb |The namespace of the Jakarta
+XML Binding<<bib9>> specification
+|jaxws |https://jakarta.ee/xml/ns/jaxws |The namespace of the Jakarta
+XML Web Services specification
+|wsa |http://www.w3.org/2005/08/addressing |The namespace of the
+WS-Addressing 1.0<<bib26>> schema
+|wsam |http://www.w3.org/2007/05/addressing/metadata |The
+namespace of the WS-Addressing 1.0 - Metadata<<bib27>> schema
+|wsp |http://www.w3.org/ns/ws-policy |The
+namespace of the Web Services Policy 1.5 - Framework<<bib28>> schema
+|===
+
+Namespace names of the general form 'http://example.org/...' and
+'http://example.com/...' represent application or context-dependent URIs
+(see RFC 2396<<bib21>>).
+
+All parts of this specification are normative, with the exception of
+examples, notes and sections explicitly marked as 'Non-Normative'.
+
+[[expert-group-members]]
+=== Expert Group Members
+
+The following people have contributed to this specification:
+
+Chavdar Baikov (SAP AG) +
+Russell Butek (IBM) +
+Manoj Cheenath (BEA Systems) +
+Shih-Chang Chen (Oracle) +
+Claus Nyhus Christensen (Trifork) +
+Ugo Corda (SeeBeyond Technology Corp) +
+Glen Daniels (Sonic Software) +
+Alan Davies (SeeBeyond Technology Corp) +
+Thomas Diesler (JBoss, Inc.) +
+Jim Frost (Art Technology Group Inc) +
+Alastair Harwood (Cap Gemini) +
+Marc Hadley (Sun Microsystems, Inc.) +
+Kevin R. Jones (Developmentor) +
+Lukas Jungmann (Oracle) +
+Anish Karmarkar (Oracle) +
+Toshiyuki Kimura (NTT Data Corp) +
+Jim Knutson (IBM) +
+Doug Kohlert (Sun Microsystems, Inc) +
+Daniel Kulp (IONA Technologies PLC) +
+Sunil Kunisetty (Oracle) +
+Changshin Lee (Tmax Soft, Inc) +
+Carlo Marcoli (Cap Gemini) +
+Srividya Natarajan (Nokia Corporation) +
+Sanjay Patil (SAP AG) +
+Greg Pavlik (Oracle) +
+Bjarne Rasmussen (Novell, Inc) +
+Sebastien Sahuc (Intalio, Inc.) +
+Rahul Sharma (Motorola) +
+Rajiv Shivane (Pramati Technologies) +
+Richard Sitze (IBM) +
+Dennis M. Sosnoski (Sosnoski Software) +
+Christopher St. John (WebMethods Corporation) +
+Mark Stewart (ATG) +
+Neal Yin (BEA Systems) +
+Brian Zotter (BEA Systems) +
+Nicholas L Gallardo (IBM) +
+Alessio Soldano (Red Hat) +
+
+[[acknowledgements]]
+=== Acknowledgements
+
+Robert Bissett, Arun Gupta, Graham Hamilton, Mark Hapner, Jitendra
+Kotamraju, Vivek Pandey, Santiago Pericas-Geertsen, Eduardo
+Pelegri-Llopart, Rama Pulavarthi, Paul Sandoz, Bill Shannon, and Kathy
+Walsh (all from Sun Microsystems) have provided invaluable technical
+input to the JAX-WS 2.0 specification.
+
+Roberto Chinnici, Marc Hadley, Kohsuke Kawaguchi, and Bill Shannon (all
+from Sun Microsystems) have provided invaluable technical input to the
+JAX-WS 2.2 specification. I would like to thank Rama Pulavarthi for his
+contributions to the 2.2 reference implementation and to the
+specification. JAX-WS TCK team (Arthur Frechette, Alan Frechette) and
+SQE team (Jonathan Benoit) assisted the conformance testing of the 2.2
+specification.
