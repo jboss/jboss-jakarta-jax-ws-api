@@ -15,13 +15,18 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.xml.ws.WebServiceException;
 
+
 class FactoryFinder {
 
+    private static final String JBOSS_JAXWS_CLIENT_MODULE = "org.jboss.ws.jaxws-client";
     private static final Logger logger = Logger.getLogger("jakarta.xml.ws");
 
     private static final ServiceLoaderUtil.ExceptionHandler<WebServiceException> EXCEPTION_HANDLER =
@@ -68,7 +73,30 @@ class FactoryFinder {
         // Use the system property
         provider = (T) fromSystemProperty(factoryId, fallbackClassName, classLoader);
         if (provider != null) return provider;
+        ClassLoader moduleClassLoader = getModuleClassLoader();
+        if (moduleClassLoader != null) {
+            try {
+                String serviceId = "META-INF/services/" + factoryId;
+                InputStream is = moduleClassLoader
+                        .getResourceAsStream(serviceId);
 
+                if (is != null) {
+                    BufferedReader rd = new BufferedReader(
+                            new InputStreamReader(is, "UTF-8"));
+
+                    String factoryClassName = rd.readLine();
+                    rd.close();
+
+                    if (factoryClassName != null
+                            && !"".equals(factoryClassName)) {
+                        return (T) ServiceLoaderUtil.newInstance(
+                                factoryClassName, factoryClassName,
+                                moduleClassLoader, EXCEPTION_HANDLER);
+                    }
+                }
+            } catch (Exception ex) {
+            }
+        }
         // handling Glassfish (platform specific default)
         if (isOsgi()) {
             provider = (T) lookupUsingOSGiServiceLoader(factoryId);
@@ -128,7 +156,62 @@ class FactoryFinder {
         }
         return null;
     }
-
+    private static ClassLoader getModuleClassLoader()
+            throws WebServiceException {
+        try {
+            final Class<?> moduleClass = Class
+                    .forName("org.jboss.modules.Module");
+            final Class<?> moduleIdentifierClass = Class
+                    .forName("org.jboss.modules.ModuleIdentifier");
+            final Class<?> moduleLoaderClass = Class
+                    .forName("org.jboss.modules.ModuleLoader");
+            final Object moduleLoader;
+            final SecurityManager sm = System.getSecurityManager();
+            if (sm == null) {
+                moduleLoader = moduleClass.getMethod("getBootModuleLoader")
+                        .invoke(null);
+            } else {
+                try {
+                    moduleLoader = AccessController
+                            .doPrivileged(new PrivilegedExceptionAction<Object>() {
+                                public Object run() throws Exception {
+                                    return moduleClass.getMethod(
+                                            "getBootModuleLoader").invoke(null);
+                                }
+                            });
+                } catch (PrivilegedActionException pae) {
+                    throw (WebServiceException) pae.getException();
+                }
+            }
+            final Object moduleIdentifier = moduleIdentifierClass.getMethod(
+                    "create", String.class).invoke(null,
+                    JBOSS_JAXWS_CLIENT_MODULE);
+            final Object module = moduleLoaderClass.getMethod("loadModule",
+                    moduleIdentifierClass).invoke(moduleLoader,
+                    moduleIdentifier);
+            if (sm == null) {
+                return (ClassLoader) moduleClass.getMethod("getClassLoader")
+                        .invoke(module);
+            }
+            try {
+                return AccessController
+                        .doPrivileged(new PrivilegedExceptionAction<ClassLoader>() {
+                            @Override
+                            public ClassLoader run() throws Exception {
+                                return (ClassLoader) moduleClass.getMethod(
+                                        "getClassLoader").invoke(module);
+                            }
+                        });
+            } catch (PrivilegedActionException pae) {
+                throw pae.getException();
+            }
+        } catch (ClassNotFoundException e) {
+            // ignore, JBoss Modules might not be available at all
+            return null;
+        } catch (Exception e) {
+            throw new WebServiceException(e);
+        }
+    }
     private static final String OSGI_SERVICE_LOADER_CLASS_NAME = "org.glassfish.hk2.osgiresourcelocator.ServiceLoader";
 
     private static boolean isOsgi() {
