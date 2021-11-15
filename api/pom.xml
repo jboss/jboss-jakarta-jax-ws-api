@@ -15,24 +15,23 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.eclipse.ee4j</groupId>
-        <artifactId>project</artifactId>
-        <version>1.0.6</version>
-        <relativePath/>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>37</version>
     </parent>
 
-    <groupId>jakarta.xml.ws</groupId>
-    <artifactId>jakarta.xml.ws-api</artifactId>
-    <version>3.0.1</version>
+    <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
+    <artifactId>jboss-jakarta-xml-ws-api_3.0_spec</artifactId>
+    <version>1.0.0.CR1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>Jakarta XML Web Services API</name>
-    <description>Jakarta XML Web Services API</description>
-    <url>https://github.com/eclipse-ee4j/jax-ws-api</url>
+    <name>JBoss Jakarta XML Web Services API</name>
+    <description>JBoss Jakarta XML Web Services API</description>
+    <url>https://github.com/jboss/jboss-jakarta-jax-ws-api_spec</url>
 
     <scm>
-        <connection>scm:git:git://github.com/eclipse-ee4j/jax-ws-api</connection>
-        <developerConnection>scm:git:git://github.com/eclipse-ee4j/jax-ws-api</developerConnection>
-        <url>https://github.com/eclipse-ee4j/jax-ws-api</url>
+        <connection>scm:git:git@github.com:jboss/jboss-jakarta-jax-ws-api_spec.git</connection>
+        <developerConnection>scm:git:git@github.com:jboss/jboss-jakarta-jax-ws-api_spec.git</developerConnection>
+        <url>https://github.com/jboss/jboss-jakarta-jax-ws-api_spec</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -78,7 +77,6 @@
             <archive>https://dev.eclipse.org/mhonarc/lists/jaxws-dev/</archive>
         </mailingList>
     </mailingLists>
-
     <dependencies>
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
@@ -96,7 +94,6 @@
             <version>${jws-api.version}</version>
         </dependency>
     </dependencies>
-
     <properties>
         <copyright.exclude>${project.basedir}/copyright-exclude</copyright.exclude>
         <copyright.ignoreyear>false</copyright.ignoreyear>
@@ -133,29 +130,9 @@
                     <version>1.4</version>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.2.1</version>
-                </plugin>
-                <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
                     <version>${spotbugs.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.2.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.2.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.felix</groupId>
@@ -166,11 +143,6 @@
                             <_noextraheaders>true</_noextraheaders>
                         </instructions>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.0.0-M3</version>
                 </plugin>
                 <plugin>
                     <groupId>org.glassfish.copyright</groupId>
@@ -225,29 +197,6 @@
                     </excludeFilterFile>
                     <fork>true</fork>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.glassfish.copyright</groupId>
-                <artifactId>glassfish-copyright-maven-plugin</artifactId>
-                <configuration>
-                    <templateFile>${copyright.templatefile}</templateFile>
-                    <excludeFile>${copyright.exclude}</excludeFile>
-                    <!-- skip files not under SCM-->
-                    <scmOnly>${copyright.scmonly}</scmOnly>
-                    <!-- for use with repair -->
-                    <update>${copyright.update}</update>
-                    <!-- check that year is correct -->
-                    <ignoreYear>${copyright.ignoreyear}</ignoreYear>
-                    <quiet>false</quiet>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>copyright</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -361,8 +310,9 @@
                     <instructions>
                         <Bundle-Description>Jakarta XML Web Services API ${spec.version} Specification</Bundle-Description>
                         <Bundle-Version>${spec.bundle.version}</Bundle-Version>
-                        <Bundle-SymbolicName>${spec.bundle.symbolic-name}</Bundle-SymbolicName>
-                        <Extension-Name>${spec.extension.name}</Extension-Name>
+                        <!--Bundle-SymbolicName>${spec.bundle.symbolic-name}</Bundle-SymbolicName-->
+                        <Bundle-SymbolicName>jboss-jakarta-xml-ws-api_3.0_spec</Bundle-SymbolicName>
+                        <!--Extension-Name>${spec.extension.name}</Extension-Name-->
                         <Implementation-Version>${spec.implementation.version}</Implementation-Version>
                         <Specification-Version>${spec.version}</Specification-Version>
                         <DynamicImport-Package>org.glassfish.hk2.osgiresourcelocator</DynamicImport-Package>
