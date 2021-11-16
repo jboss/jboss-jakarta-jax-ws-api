@@ -320,6 +320,7 @@
                         <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
                         <Implementation-Build-Id>${scmBranch}-${buildNumber}</Implementation-Build-Id>
                         <Import-Package>!org.glassfish.hk2.osgiresourcelocator,*</Import-Package>
+                        <Automatic-Module-Name>beta.jboss.jakarta-xml-ws.api_3_0</Automatic-Module-Name>
                     </instructions>
                 </configuration>
                 <executions>
