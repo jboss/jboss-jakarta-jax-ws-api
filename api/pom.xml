@@ -22,7 +22,7 @@
 
     <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
     <artifactId>jboss-jakarta-xml-ws-api_3.0_spec</artifactId>
-    <version>1.0.0.CR1-SNAPSHOT</version>
+    <version>1.0.0.Final-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>JBoss Jakarta XML Web Services API</name>
     <description>JBoss Jakarta XML Web Services API</description>
