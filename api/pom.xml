@@ -32,7 +32,7 @@
         <connection>scm:git:git@github.com:jboss/jboss-jakarta-jax-ws-api_spec.git</connection>
         <developerConnection>scm:git:git@github.com:jboss/jboss-jakarta-jax-ws-api_spec.git</developerConnection>
         <url>https://github.com/jboss/jboss-jakarta-jax-ws-api_spec</url>
-        <tag>HEAD</tag>
+        <tag>jboss-jakarta-xml-ws-api_3.0_spec-1.0.0.Final</tag>
     </scm>
 
     <licenses>
@@ -124,6 +124,11 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>buildnumber-maven-plugin</artifactId>
