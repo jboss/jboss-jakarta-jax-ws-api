@@ -13,26 +13,23 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
-        <groupId>org.eclipse.ee4j</groupId>
-        <artifactId>project</artifactId>
-        <version>1.0.7</version>
-        <relativePath/>
+       <groupId>org.jboss</groupId>
+       <artifactId>jboss-parent</artifactId>
+       <version>39</version>
     </parent>
-
-    <groupId>jakarta.xml.ws</groupId>
-    <artifactId>jakarta.xml.ws-api</artifactId>
-    <version>4.0.0</version>
+    <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
+    <artifactId>jboss-jakarta-xml-ws-api_4.0_spec</artifactId>
+    <version>1.0.0.Final-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>Jakarta XML Web Services API</name>
-    <description>Jakarta XML Web Services API</description>
-    <url>https://github.com/eclipse-ee4j/jax-ws-api</url>
+    <name>JBoss Jakarta XML Web Services API</name>
+    <description>JBoss Jakarta XML Web Services API</description>
+    <url>https://github.com/jboss/jboss-jakarta-jax-ws-api_spec</url>
 
     <scm>
-        <connection>scm:git:git://github.com/eclipse-ee4j/jax-ws-api</connection>
-        <developerConnection>scm:git:git://github.com/eclipse-ee4j/jax-ws-api</developerConnection>
-        <url>https://github.com/eclipse-ee4j/jax-ws-api</url>
+        <connection>scm:git:https://github.com/jboss/jboss-jakarta-jax-ws-api_spec.git</connection>
+        <developerConnection>scm:git:https://github.com/jboss/jboss-jakarta-jax-ws-api_spec.git</developerConnection>
+        <url>https://github.com/jboss/jboss-jakarta-jax-ws-api_spec</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -123,15 +120,17 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+
+                <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>buildnumber-maven-plugin</artifactId>
                     <version>3.0.0</version>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.2.1</version>
-                </plugin>
+
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
@@ -141,21 +140,7 @@
                         <threshold>${spotbugs.threshold}</threshold>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.10.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.2.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.3.2</version>
-                </plugin>
+
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
@@ -165,11 +150,6 @@
                             <_noextraheaders>true</_noextraheaders>
                         </instructions>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.0.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.glassfish.copyright</groupId>
@@ -219,21 +199,6 @@
                     <fork>true</fork>
                     <excludeFilterFile>${spotbugs.exclude}</excludeFilterFile>
                     <failThreshold>High</failThreshold>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.glassfish.copyright</groupId>
-                <artifactId>glassfish-copyright-maven-plugin</artifactId>
-                <configuration>
-                    <templateFile>${copyright.templatefile}</templateFile>
-                    <excludeFile>${copyright.exclude}</excludeFile>
-                    <!-- skip files not under SCM-->
-                    <scmOnly>${copyright.scmonly}</scmOnly>
-                    <!-- for use with repair -->
-                    <update>${copyright.update}</update>
-                    <!-- check that year is correct -->
-                    <ignoreYear>${copyright.ignoreyear}</ignoreYear>
-                    <quiet>false</quiet>
                 </configuration>
             </plugin>
             <plugin>
@@ -338,8 +303,9 @@
                     <instructions>
                         <Bundle-Description>Jakarta XML Web Services API ${spec.version} Specification</Bundle-Description>
                         <Bundle-Version>${spec.bundle.version}</Bundle-Version>
-                        <Bundle-SymbolicName>${spec.bundle.symbolic-name}</Bundle-SymbolicName>
-                        <Extension-Name>${spec.extension.name}</Extension-Name>
+                        <!--Bundle-SymbolicName>${spec.bundle.symbolic-name}</Bundle-SymbolicName-->
+                        <Bundle-SymbolicName>jboss-jakarta-xml-ws-api_4.0_spec</Bundle-SymbolicName>
+                        <!--Extension-Name>${spec.extension.name}</Extension-Name-->
                         <Implementation-Version>${spec.implementation.version}</Implementation-Version>
                         <Specification-Version>${spec.version}</Specification-Version>
                         <DynamicImport-Package>org.glassfish.hk2.osgiresourcelocator</DynamicImport-Package>
@@ -347,6 +313,7 @@
                         <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
                         <Implementation-Build-Id>${scmBranch}-${buildNumber}</Implementation-Build-Id>
                         <Import-Package>!org.glassfish.hk2.osgiresourcelocator,*</Import-Package>
+                        <Automatic-Module-Name>beta.jboss.jakarta-xml-ws.api_4_0</Automatic-Module-Name>
                     </instructions>
                 </configuration>
                 <executions>
